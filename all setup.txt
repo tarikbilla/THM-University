@@ -1,0 +1,206 @@
+
+-------------------------------------------
+---------------Local Setup-----------------
+-------------------------------------------
+
+================== 1. First we create a volume to store portainers database: ==================
+docker volume create portainer_data
+
+================== 2. Then download and deploy portainer server (community edition): ==================
+docker run -d -p 8000:8000 -p 9443:9443 -p 9000:9000 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:latest
+
+================== open Portainer using port 9000====================
+http://localhost:9000/#!/init/admin
+
+==================3, deploy Node-Red====================
+docker run -it -p 1880:1880 -v node_red_data:/data --name mynodered nodered/node-red
+
+==================4. Configure Node Red & MQTT ====================
+▪ Use EI Broker: mqtt.ei.thm.de:1993 
+▪ user/pw: iotlab/iotlab 
+▪ Topic format: THM/IoTLab/yourname
+
+================== 4. Experiment with MQTT Clients ====================
+name: THM/IoTLab/tarik/BME680
+Host: mqtt://     2nd box: mqtt.ei.thm.de
+port: 1993
+username: iotlab
+password: iotlab
+
+
+==================5, μcontroller and sensorboard====================
+
+Create a new Project (PIO Home → Open)
+▪ Wait until Installer is finished!
+▪ New Project:
+▪ IoTLab3a → select Heltec board→
+Framework Arduino:
+Heltec WiFi LoRa 32 (V2) (Heltech Automation)
+▪ Add library to your project:
+→ PIO Home → libraries → select Heltec
+ESP32 Dev-Boards v1.1.2 → Add to your
+project → maybe restart DIE
+▪ Go to your project → src → main.cpp
+
+replace code: main.cpp and platform------.ini
+
+==================Setup====================
+==================Setup====================
+==================Setup====================
+==================Setup====================
+==================Setup====================
+
+tbll81
+Aa121!@#$%^&*()
+
+
+
+
+
+-------------------------------------------
+---------------Server Setup----------------
+-------------------------------------------
+
+==================1, open portainer====================================
+https://cloud.ei.thm.de
+
+================== 2, Create a new stack ==============================
+▪ Go to cloud portainer -> Stacks
+▪ Add stack name as like: lab2tarik
+▪ click Web Editor -> Past This Code:
+=======================================================================
+
+version: "3.8"
+
+services:
+  node-red-tarik:
+    image: nodered/node-red:latest
+    ports:
+      - "50211:1880"
+    networks:
+      - tarik_net
+    volumes:
+      - tarik_nodered_vol:/data
+
+  mosquitto-tarik:
+    image: eclipse-mosquitto:1.6.13
+    ports:
+      - "50212:1883"
+    networks:
+      - tarik_net
+
+  influxdb-tarik:
+    image: influxdb:latest
+    ports:
+      - "50213:8086"
+    networks:
+      - tarik_net
+    volumes:
+      - tarik_influx_vol:/var/lib/influxdb2:rw
+
+  grafana-tarik:
+    image: grafana/grafana:latest
+    ports:
+      - "50214:3000"
+    networks:
+      - tarik_net
+    volumes:
+      - tarik_grafana_vol:/var/lib/grafana:rw
+
+volumes:
+  tarik_nodered_vol:
+  tarik_influx_vol:
+  tarik_grafana_vol:
+
+networks:
+  tarik_net:
+
+
+================== 3. Configure InfluxDB ====================
+▪ Walk through the Get Started guide and setup initial user
+▪ Choose a username and password: admin/admin12345678
+▪ Choose the Organization Name: THM
+▪ Name your data bucket: lab02
+
+▪ COPY TO CLIPBOARD not always working, so copy manually !!
+▪ Click “Load your data” on the Getting Started Page
+▪ In the “Data” menu, head to Buckets and change the
+▪ retention policy in “settings” if needed
+
+==================4. Configure Grafana lab2.pdf====================
+Open the Grafana Web Interface
+▪ Login with the default user/password combination (admin/admin)
+▪ Choose a new password and note it down
+▪ On the Grafana Homepage click the “Add your first data source” Panel
+▪ Add InfluxDB as a source
+
+Add InfluxDB to Grafana
+▪ Change the Query Language to Flux
+▪ Enter the URL and Port of your InfluxDB
+▪ Disable Basic Auth
+▪ Enter your Organization, Token and Default Bucket under "InfluxDB Details"
+▪ Click save and test → should be green and successful
+
+Create a dashboard and display measurements
+▪ Click on the “Create your first dashboard” panel at the Homepage of Grafana
+▪ Add visualization and select your influxdb as data source
+
+Go back to your InfluxDB Explorer
+▪ Choose your bucket and a measurement you want to visualize (value)
+▪ Click on the script editor button
+▪ Copy the query text for Grafana
+
+
+==================Function code for cloud node red====================
+
+msg.payload.Temp_R = Number(msg.payload.Temp_R);
+msg.payload.Pres_R = Number(msg.payload.Pres_R);
+msg.payload.Humid_R = Number(msg.payload.Humid_R);
+msg.payload.GasResi_R = Number(msg.payload.GasResi_R);
+msg.payload.IAQ = Number(msg.payload.IAQ);
+msg.payload.IAQ_A = Number(msg.payload.IAQ_A);
+msg.payload.Temp = Number(msg.payload.Temp);
+msg.payload.Humid = Number(msg.payload.Humid);
+msg.payload.IAQ_S = Number(msg.payload.IAQ_S);
+msg.payload.CO2 = Number(msg.payload.CO2);
+msg.payload.VOC = Number(msg.payload.VOC);
+return msg;
+
+================== 6, cloud Roadnet InflexDB====================
+name: influxdb
+org: THM
+bucket: lab02
+Mesurement: CPU_PC
+
+click edit icon then:
+name: InflexDB
+version: 2.0 
+URL: http://influxdb-tarik:8086
+Token: that copy from InflexDB
+
+
+
+==================7, Cloud Message Received Rodenate ====================
+server: 
+action: Subscribe to single topic
+topic: THM/IoTLab/tarik/BME680
+QoS:2
+
+click edit: THMnet
+server: mqtt.ei.thm.de
+port: 1993
+client id: THMnet
+
+Click Sicherheit tab: 
+username: iotlab
+password: iotlab
+
+
+
+
+==================Setup====================
+==================Setup====================
+==================Setup====================
+==================Setup====================
+==================Setup====================
+==================Setup====================
