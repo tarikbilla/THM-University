@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  node-red-tarik:
+    image: nodered/node-red:latest
+    ports:
+      - "50211:1880"
+    networks:
+      - tarik_net
+    volumes:
+      - tarik_nodered_vol:/data
+
+  mosquitto-tarik:
+    image: eclipse-mosquitto:1.6.13
+    ports:
+      - "50212:1883"
+    networks:
+      - tarik_net
+
+  influxdb-tarik:
+    image: influxdb:latest
+    ports:
+      - "50213:8086"
+    networks:
+      - tarik_net
+    volumes:
+      - tarik_influx_vol:/var/lib/influxdb2:rw
+
+  grafana-tarik:
+    image: grafana/grafana:latest
+    ports:
+      - "50214:3000"
+    networks:
+      - tarik_net
+    volumes:
+      - tarik_grafana_vol:/var/lib/grafana:rw
+
+volumes:
+  tarik_nodered_vol:
+  tarik_influx_vol:
+  tarik_grafana_vol:
+
+networks:
+  tarik_net:
